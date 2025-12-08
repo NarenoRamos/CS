@@ -1,15 +1,16 @@
 services:
-  NctsExcelUpload:
+  nctsexcelupload:
     build: ./Ncts Excel Upload
     container_name: NctsExcelUpload
     volumes:
       - ./Ncts Excel Upload/archive:/app/archive
       - ./Ncts Excel Upload/incomming:/app/incomming
       - ./Ncts Excel Upload/outgoing:/app/outgoing
-      - ./templates:/app/templates
       - ./Ncts Excel Upload/main.py:/app/main.py
-      - ./classes.py:/app/classes.py
       - ./Ncts Excel Upload/tasks.py:/app/tasks.py
+
+      - ./classes.py:/app/classes.py
+      - ./templates:/app/templates
 
     command: ["/app/venv/bin/python", "main.py"]
 
