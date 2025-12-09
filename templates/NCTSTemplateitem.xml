@@ -1,4 +1,5 @@
 			<itemNumber>{goods_itemNumber}</itemNumber>
+      		<commodityCode>{commodityCode}</commodityCode>
 			<goodsDescription>{goods_description}</goodsDescription>
 			<grossMass>{goods_grossMass}</grossMass>
 			<netMass>{goods_netMass}</netMass>
