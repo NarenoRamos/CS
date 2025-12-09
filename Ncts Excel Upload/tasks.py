@@ -1,11 +1,12 @@
 import pandas as pd
-from classes import Declaration
 from datetime import datetime
 import os
 import shutil
 import psutil
-import time
 import statistics
+
+from classes import Declaration
+from templates import templates as temp
 
 def NCTS_excel_upload():
     process = psutil.Process()
@@ -26,9 +27,13 @@ def NCTS_excel_upload():
         df = pd.read_excel(filename_full, engine="openpyxl", header=1)
         df.columns = df.columns.str.replace(r'\n', ' ', regex=True).str.strip()
 
+        if df.iloc[2, 9] == 0 and df.iloc[2, 9] == 0:
+            first_row_totals_indicator = True
+
         departure = Declaration('departure')
 
         know_contianers = []
+        previous_doc_items = []
         items = []
         itemcount = 1
         # Per rij doorlopen
@@ -83,159 +88,60 @@ def NCTS_excel_upload():
 
             if container not in know_contianers:
                 know_contianers.append(container)
+
             elif container in know_contianers:
-                header_data = {
-                    # ------------------------------------------------------------------
-                    # Sectie 1: Basis Header Info (Root en CustomsStreamliner)
-                    # ------------------------------------------------------------------
-                    "dateCreation": "",           # Datum aanmaak (YYYY-MM-DD)
-                    "timeCreation": "",           # Tijd aanmaak (HH:MM:SS)
-                    "template": "",               # Sjabloon naam
-                    "company": activecompany,                # Bedrijfsnaam
-                    "messageStatus": "New",       # Status van het bericht (bv. New, Update)
-                    "status": "Draft",            # Dossier status (bv. Draft, Sent)
-                    "LRN": "",                    # Local Reference Number (Uniek per aangifte)
-                    "user": "",                   # Gebruikerscode/Naam die de aangifte aanmaakt
-                    "printLocation": "",          # Print locatie
-                    "createDeclaration": "Y",     # Declaratie aanmaken (Y/N)
-                    "sendDeclaration": "N",       # Declaratie verzenden (Y/N)
-                    "sendPlannedDateTime": "",    # Geplande verzenddatum en -tijd (YYYY-MM-DDTHH:MM:SS)
-                    "commercialreference": referte_vak_7,    # Dossiernummer ERP / Commerciële referentie
-                    "terminalDeclarationType": "",# Type terminal aangifte
-                    "terminal": "",               # Terminal code
-                    "transhipment": "N",          # Overslag (Y/N)
+                header_data = temp.get_departure_header()
 
-                    # ------------------------------------------------------------------
-                    # Sectie 2: Principal (Hoofdelijk Aansprakelijke)
-                    # ------------------------------------------------------------------
-                    "principal_id": "",           # EORI/ID van de Principal
-                    "principal_contactPersonCode": "", # Contactpersoon code van de Principal
+                sum_bruto = df[df.iloc[:,13] == container].sum()
+                sum_netto = df[df.iloc[:,14] == container].sum()
 
-                    # ------------------------------------------------------------------
-                    # Sectie 3: Controlewaarden
-                    # ------------------------------------------------------------------
-                    "ControlArticles": "0",       # Totaal aantal artikelen (items)
-                    "ControlPackages": aantal_verpakkingen,       # Totaal aantal colli/pakketten
-                    "ControlGrossmass": brutogewicht,   # Totale Bruto Massa
-                    "ControlNetmass": netto_gewicht,     # Totale Netto Massa
+                header_data["template"] = templatecode
+                header_data["company"] = activecompany
+                header_data["commercialreference"] = referte_vak_7
+                header_data["principal_id"] = opdrachtgever
+                header_data["principal_contactPersonCode"] = contact
+                header_data["ControlPackages"] = aantal_verpakkingen
+                header_data["ControlGrossmass"] = brutogewicht
+                header_data["ControlNetmass"] = netto_gewicht
+                header_data["total_packages"] = aantal_verpakkingen
+                header_data["total_grossmass"] = sum_bruto
+                header_data["ControlNetmass"] = sum_netto
 
-                    # ------------------------------------------------------------------
-                    # Sectie 4: Header Veldinformatie
-                    # ------------------------------------------------------------------
-                    "countryOfDestinationCode": "",  # Land van bestemming (bv. GB)
-                    "placeOfLoadingCode": "",        # Plaats van belading code
-                    "countryOfDispatchExportCode": "", # Land van verzending/export (bv. BE)
-                    "inlandTransportMode": "",       # Vervoerswijze in het binnenland (Code)
-                    "transportModeAtBorder": "",     # Vervoerswijze aan de grens (Code)
-                    
-                    "identityOfMeansOfTransportAtDeparture": "", # Identiteit vervoermiddel bij vertrek
-                    "nationalityOfMeansOfTransportAtDeparture": "", # Nationaliteit vervoermiddel bij vertrek
+            item_data = temp.get_departure_item()
 
-                    "identityOfMeansOfTransportCrossingBorder": "", # Identiteit vervoermiddel dat grens overschrijdt
-                    "nationalityOfMeansOfTransportCrossingBorder": "", # Nationaliteit vervoermiddel dat grens overschrijdt
+            item_data["goods_itemNumber"] = itemcount
+            item_data["commodityCode"] = goederencode
+            item_data["goods_description"] = goederen_omschrijving
+            item_data["goods_grossMass"] = brutogewicht
+            item_data["goods_netMass"] = netto_gewicht
+            item_data["containerNumber"] = container
+            item_data["kindOfPackages"] = type_verpakkingen
+            item_data["numberOfPackages"] = aantal_verpakkingen
 
-                    "issuingDate": "",            # Datum van afgifte (YYYY-MM-DD)
-                    "dialogLanguageIndicatorAtDeparture": "NL", # Taalcode voor dialoog
-                    "nctsAccompanyingDocumentLanguageCode": "NL", # Taalcode voor het NCTS document
+            if activecompany in "PORTWEB|WWL|WCT MEERHO|PORTZEEB|CAT1-PZEEB" and first_row_totals_indicator and index == 0:
+                previous_doc_str = f"1{vrachtlijst}{lloydsnummer}"
+                complement_info_str = f"{carriercode_agentcode}*{str(1).zfill(item)}*{billoflading}"
+                
+                item_data["previousDocumentType"] = "126E"
+                item_data["previousDocumentReference"] = previous_doc_str
+                item_data["complementOfInformation"] = complement_info_str
 
-                    "total_items": "0",           # Totaal aantal goederenartikelen
-                    "total_packages": aantal_verpakkingen,        # Totaal aantal colli
-                    "total_grossmass": brutogewicht,    # Totaal bruto gewicht
-                    "total_nettmass": netto_gewicht,     # Totaal netto gewicht
+            if item not in previous_doc_items and itemcount == item:
+                previous_doc_items.append(item)
+                havencode = 1 #moet van sql query komen
 
-                    "simplifiedProcedureFlag": "0", # Vereenvoudigde procedure vlag (0=Nee)
-                    "declarationPlace": "",       # Plaats van aangifte
-                    # ------------------------------------------------------------------
-                    # Sectie 5: Declarant (Aangever)
-                    # ------------------------------------------------------------------
-                    "declarant_id": "",           # EORI/ID van de Aangever
-                    "declarant_name": "",
-                    "declarant_streetAndNumber": "",
-                    "declarant_postalCode": "",
-                    "declarant_City": "",
-                    "declarant_countryCode": "",
-                    "declarant_tin": "",          # Fiscaal nummer (TIN)
+                previous_doc_str = f"{havencode}{vrachtlijst}{lloydsnummer}"
+                complement_info_str = f"{carriercode_agentcode}*{str(item).zfill(4)}*{billoflading}"
+                
+                item_data["previousDocumentType"] = "126E"
+                item_data["previousDocumentReference"] = previous_doc_str
+                item_data["complementOfInformation"] = complement_info_str
 
-                    # ------------------------------------------------------------------
-                    # Sectie 6: Representative (Vertegenwoordiger)
-                    # ------------------------------------------------------------------
-                    "representative_user": "",
-                    "representative_name": "",
-                    "representative_authorisation": "", # Machtiging
-
-                    # ------------------------------------------------------------------
-                    # Sectie 7: Consignor (Aflader/Verzender)
-                    # ------------------------------------------------------------------
-                    "consignor_id": "",           # EORI/ID van de Verzender
-                    "consignor_name": "",
-                    "consignor_streetAndNumber": "",
-                    "consignor_postalCode": "",
-                    "consignor_City": "",
-                    "consignor_countryCode": "",
-
-                    # ------------------------------------------------------------------
-                    # Sectie 8: Consignee (Ontvanger)
-                    # ------------------------------------------------------------------
-                    "consignee_id": "",           # EORI/ID van de Ontvanger
-                    "consignee_name": "",
-                    "consignee_streetAndNumber": "",
-                    "consignee_postalCode": "",
-                    "consignee_City": "",
-                    "consignee_countryCode": "",
-
-                    # ------------------------------------------------------------------
-                    # Sectie 9: Douanekantoren, Controle & Garantie
-                    # ------------------------------------------------------------------
-                    "departureReferenceNumber": "", # Kantoor van vertrek code
-                    "destinationReferenceNumber": "", # Kantoor van bestemming code
-
-                    "controlResultCode": "",      # Controle resultaat code
-                    "dateLimit": "",              # Datum limiet (YYYY-MM-DD)
-
-                    "guaranteeType": "",          # Garantie type (bv. 1)
-                    "guaranteeReference": "",     # Garantie referentienummer (GRN)
-                    "accessCode": "",             # Toegangscode
-                    "notValidForEC": "0",         # Niet geldig voor EC (1=Ja, 0=Nee)
-
-                    "transportPlannedDate": "",   # Geplande transportdatum (YYYY-MM-DD)
-                    "transportPlannedTime": ""    # Geplande transporttijd (HH:MM)
-
-                }
-
-            item = {
-                # ------------------------------------------------------------------
-                # Sectie 1: Basis Item Informatie
-                # ------------------------------------------------------------------
-                "goods_itemNumber": itemcount,         # Artikelnummer (1, 2, 3, etc.)
-                "goods_description": goederen_omschrijving,        # Gedetailleerde goederenomschrijving
-                "goods_grossMass": brutogewicht,      # Bruto massa (per item)
-                "goods_netMass": netto_gewicht,        # Netto massa (per item)
-
-                # ------------------------------------------------------------------
-                # Sectie 2: Previous Administrative References (Voorgaande Documenten)
-                # ------------------------------------------------------------------
-                "previousDocumentType": "",       # Type van het voorgaande document (Code)
-                "previousDocumentReference": "",  # Referentie van het voorgaande document
-                "complementOfInformation": "",    # Aanvullende informatie
-                "DocumentLineItemNr": "",         # Lijnnummer in het voorgaande document (indien van toepassing)
-
-                # ------------------------------------------------------------------
-                # Sectie 3: Containers
-                # ------------------------------------------------------------------
-                "containerNumber": container,            # Containernummer (indien van toepassing)
-
-                # ------------------------------------------------------------------
-                # Sectie 4: Packages (Colli)
-                # ------------------------------------------------------------------
-                "marksAndNumbersOfPackages": "",   # Merken en nummers op de verpakkingen
-                "kindOfPackages": "",             # Type verpakking (Code, bv. CT voor Karton)
-                "numberOfPackages": aantal_verpakkingen,          # Aantal colli
-                "numberOfPieces": "0"             # Aantal stuks (indien van toepassing, bv. bij losse goederen)
-            }
-
-            items.append(item)
+            items.append(item_data)
             
-            if index == len(df) - 1 or df['Container'].iloc[index + 1] != container :
+            if index == len(df) - 1 or df['Container'].iloc[index + 1] != container:
+                header_data["ControlArticles"] = itemcount
+                header_data["total_items"] = itemcount
                 
                 xml_string = departure.generate_departure_xml_string(header_data, items)
 
@@ -246,6 +152,7 @@ def NCTS_excel_upload():
 
                 itemcount = 1 #reset itemcount
                 items = [] #reset items
+                previous_doc_items = [] #reset previous_doc_items
 
         filename_full_archive = f'{archive}incomming/{filename}'
         shutil.move(filename_full, filename_full_archive)
