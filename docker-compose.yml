@@ -2,6 +2,8 @@ services:
   nctsexcelupload:
     build: ./Ncts Excel Upload
     container_name: NctsExcelUpload
+    environment:
+          - INFINITE_LOOP=${INFINITE_LOOP} 
     volumes:
       - ./Ncts Excel Upload/archive:/app/archive
       - ./Ncts Excel Upload/incomming:/app/incomming
@@ -12,7 +14,7 @@ services:
       - ./classes.py:/app/classes.py
       - ./templates:/app/templates
 
-    command: ["/app/venv/bin/python", "main.py"]
+    command: ["/opt/venv/bin/python3", "main.py"]
 
     # project:
     # build: ./Project

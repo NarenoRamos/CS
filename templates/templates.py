@@ -7,13 +7,13 @@ def get_departure_header():
         "timeCreation": "",           # Tijd aanmaak (HH:MM:SS)
         "template": "",               # Sjabloon naam
         "company": "",                # Bedrijfsnaam
-        "messageStatus": "New",       # Status van het bericht (bv. New, Update)
-        "status": "Draft",            # Dossier status (bv. Draft, Sent)
+        "messageStatus": "",       # Status van het bericht (bv. New, Update)
+        "status": "",            # Dossier status (bv. Draft, Sent)
         "LRN": "",                    # Local Reference Number (Uniek per aangifte)
         "user": "",                   # Gebruikerscode/Naam die de aangifte aanmaakt
         "printLocation": "",          # Print locatie
-        "createDeclaration": "Y",     # Declaratie aanmaken (Y/N)
-        "sendDeclaration": "Y",       # Declaratie verzenden (Y/N)
+        "createDeclaration": "T",     # Declaratie aanmaken (T/F)
+        "sendDeclaration": "F",       # Declaratie verzenden (T/F)
         "sendPlannedDateTime": "",    # Geplande verzenddatum en -tijd (YYYY-MM-DDTHH:MM:SS)
         "commercialreference": "",    # Dossiernummer ERP / Commerciële referentie
         "terminalDeclarationType": "",# Type terminal aangifte
@@ -53,8 +53,8 @@ def get_departure_header():
         "nationalityOfMeansOfTransportCrossingBorder": "", # Nationaliteit vervoermiddel dat grens overschrijdt
 
         "issuingDate": "",            # Datum van afgifte (YYYY-MM-DD)
-        "dialogLanguageIndicatorAtDeparture": "NL", # Taalcode voor dialoog
-        "nctsAccompanyingDocumentLanguageCode": "NL", # Taalcode voor het NCTS document
+        "dialogLanguageIndicatorAtDeparture": "", # Taalcode voor dialoog
+        "nctsAccompanyingDocumentLanguageCode": "", # Taalcode voor het NCTS document
 
         "total_items": "0",           # Totaal aantal goederenartikelen
         "total_packages": "0",        # Totaal aantal colli
@@ -114,10 +114,11 @@ def get_departure_header():
         "guaranteeType": "",          # Garantie type (bv. 1)
         "guaranteeReference": "",     # Garantie referentienummer (GRN)
         "accessCode": "",             # Toegangscode
-        "notValidForEC": "0",         # Niet geldig voor EC (1=Ja, 0=Nee)
+        "notValidForEC": "",         # Niet geldig voor EC (1=Ja, 0=Nee)
 
         "transportPlannedDate": "",   # Geplande transportdatum (YYYY-MM-DD)
-        "transportPlannedTime": ""    # Geplande transporttijd (HH:MM)
+        "transportPlannedTime": "",   # Geplande transporttijd (HH:MM)
+        "agreedLocationOfGoods": ""   # Afgesproken locatie
     }
     return dir
 
@@ -154,5 +155,235 @@ def get_departure_item():
         "numberOfPieces": "0"             # Aantal stuks (indien van toepassing, bv. bij losse goederen)
 
 
+    }
+    return dir
+
+def get_PLDA_header():
+    dir = {
+        # ------------------------------------------------------------------
+        # Sectie 1: Basis Header Info (Root en CustomsStreamliner)
+        # ------------------------------------------------------------------
+        "dateCreation": "",           # Datum aanmaak (YYYY-MM-DD)
+        "timeCreation": "",           # Tijd aanmaak (HH:MM:SS)
+        "linkIdERP": "",              # Interne ERP-link ID
+        
+        "template": "",               # Sjabloon naam
+        "company": "",                # Active company
+        "status": "",            # Dossier status (bv. Draft, Sent)
+        "user": "",                   # Gebruikerscode/Naam die de aangifte aanmaakt
+        "printLocation": "",          # Print locatie
+        "sendDeclaration": "",        # Autosend
+        "declarationId": "",          # Declaratie ID
+        "procedureType": "",          # Type procedure (bv. S, D)
+
+        # ------------------------------------------------------------------
+        # Sectie 2: Principal (Hoofdelijk Aansprakelijke/Exporteur)
+        # ------------------------------------------------------------------
+        "principal_operatorName": "",
+        "principal_postalCode": "",
+        "principal_streetAndNumber1": "",
+        "principal_streetAndNumber2": "",
+        "principal_city": "",
+        "principal_countrySubEntity": "",
+        "principal_country": "",
+        "principal_id": "",           # EORI/ID van de Principal
+        "principal_erpId": "",
+        "principal_erpId2": "",
+        "principal_contactPersonCode": "",
+        "principal_contactPersonName": "",
+        "principal_contactPersonEmail": "",
+
+        # ------------------------------------------------------------------
+        # Sectie 3: Supplier (Leverancier, indien van toepassing)
+        # ------------------------------------------------------------------
+        "supplier_country": "",
+        "supplier_identifier": "",
+        "supplier_operatorIdentity": "",
+        "supplier_operatorName": "",
+        "supplier_postalCode": "",
+        "supplier_streetAndNumber1": "",
+        "supplier_streetAndNumber2": "",
+        "supplier_city": "",
+        "supplier_countrySubEntity": "",
+        "supplier_country_address": "", # Let op: gebruikt in OperatorAddress
+        "supplier_id": "",
+        "supplier_erpId": "",
+        "supplier_erpId2": "",
+
+        # ------------------------------------------------------------------
+        # Sectie 4: Geïntegreerde Logistieke Systemen (ILS)
+        # ------------------------------------------------------------------
+        "createDossier": "F",
+        "IlsDossier_company": "",
+        "IlsDossier_departement": "",
+        "IlsDossier_dossierType": "",
+        "IlsDossier_subDossierType": "",
+        "IlsDossier_dossierId": "",
+
+        # ------------------------------------------------------------------
+        # Sectie 5: Parties (Enkel ERP IDs)
+        # ------------------------------------------------------------------
+        "consignee_id": "",           # EORI/ID van de Ontvanger
+        "consignee_erpId": "",
+        "consignee_erpId2": "",
+        "consignor_id": "",           # EORI/ID van de Verzender
+        "consignor_erpId": "",
+        "consignor_erpId2": "",
+        "RelationImportDuties_id": "",
+        "RelationImportDuties_erpId": "",
+        "RelationImportDuties_erpId2": "",
+
+        # ------------------------------------------------------------------
+        # Sectie 6: Controle & Totalen (CustomsStreamliner)
+        # ------------------------------------------------------------------
+        "totalPrice": "0.00", 
+        "totalGrossmass": "0.00",
+        "totalNetmass": "0.00",
+        "totalPackages": "0", 
+        
+        # Extra CS Velden
+        "terminal": "",
+        "terminalExtraDocuments": "",
+        "bookingReference": "",
+        "FreeText": "",
+        "Amount": "0.00",
+        "statisticsGroup": "",
+        "DV1_type": "",
+        "relationStockFiche": "",
+        "relationStockFicheErpId": "",
+        "relationStockFicheErpId2": "",
+        
+        # ------------------------------------------------------------------
+        # Sectie 7: MessageBody / SADExport / GoodsDeclaration Header
+        # ------------------------------------------------------------------
+        "acceptanceDate": "", 
+        "localReferenceNumber": "",   # LRN
+        "commercialReference": "", 
+        
+        # Totalen (SAD Export)
+        "items": "0", 
+        "totalGrossmass_sad": "0.00",
+        "totalNetmass_sad": "0.00",
+        "packages": "0", 
+        
+        # Transactie Aard
+        "transactionNature1": "", 
+        "transactionNature2": "", 
+        
+        # Declarant (Aangever)
+        "declarantstatus": "",
+        "authorisedIdentity": "",
+        "declarant_country": "",
+        "declarant_identifier": "",
+        "declarant_operatorIdentity": "",
+        "declarant_operatorName": "",
+        "declarant_postalCode": "",
+        "declarant_streetAndNumber1": "",
+        "declarant_city": "",
+        "declarant_country_address": "",
+        "declarant_contactPersonName": "", 
+        "declarant_contactPersonCommunicationNumber": "", 
+        "declarant_contactPersonEmail": "", 
+        "declarant_contactPersonFaxNumber": "", 
+        
+        "issuePlace": "", 
+        "typePartOne": "", 
+        "typePartTwo": "", 
+        
+        # Consignor (Aflader/Verzender) - Gegevens
+        "consignor_country": "",
+        "consignor_identifier": "", 
+        "consignor_operatorIdentity": "", 
+        "consignor_operatorName": "", 
+        "consignor_postalCode": "",
+        "consignor_streetAndNumber1": "",
+        "consignor_city": "",
+        "consignor_country_address": "",
+        
+        # Consignee (Ontvanger) - Gegevens
+        "consignee_operatorName": "", 
+        "consignee_postalCode": "",
+        "consignee_streetAndNumber1": "",
+        "consignee_city": "",
+        "consignee_country_address": "",
+        
+        # Transport
+        "deliveryTerms": "", 
+        "deliveryTermsPlace": "", 
+        "borderMode": "", 
+        "borderNationality": "", 
+        "borderIdentity": "", 
+        "departureIdentity": "", 
+        "inlandMode": "", 
+        "dispatchCountry": "", 
+        
+        # Douane Kantoor & Locatie
+        "exitOffice": "", 
+        "precise": "", 
+        "validationOffice": "", 
+        "loadingPlaceIdentity": "", 
+        
+        # Factuur
+        "exchangeRate": "1.00",
+        "currency": "EUR",
+        "invoiceAmount": "0.00",
+        
+        "container": "",
+        "specificCircumStance": "",
+    }
+    return dir
+
+def get_PLDA_item():
+    dir = {
+        # Basis Item Info
+        "sequence": "",              # Artikelnummer (1, 2, 3...)
+        "commodityCode": "",         # HS Code / Goederencode
+        "netMass": "0.00",           # Netto massa per item
+        "grossMass": "0.00",         # Bruto massa per item
+        "goodsDescription": "",      # Gedetailleerde goederenomschrijving
+
+        # Verpakking
+        "marksNumber": "",           # Merken en nummers
+        "packages": "0",             # Aantal colli
+        "packageType": "",           # Type verpakking (Code)
+
+        # Land/Regio
+        "destinationCountry": "",    # Land van bestemming
+        "destinationRegion": "",
+        "originCountry": "",         # Land van oorsprong
+        "originRegion": "",
+
+        # Supplementaire Eenheden
+        "supplementaryUnits": "0",
+        "supplementaryUnitsCode": "", # Code voor supplementaire eenheden (bv. C62)
+
+        # Douanebehandeling
+        "procedurePart1": "",        # Procedure (deel 1: 40)
+        "procedurePart2": "",        # Procedure (deel 2: 00)
+        "procedureType": "",         # Type procedure (bv. Y)
+        
+        # Entrepot (Warehouse)
+        "warehouseType": "",
+        "warehouseIdentity": "",
+        "warehouseCountry": "",
+        
+        # Invoerrechten (Charges Import - vaak niet van toepassing bij export)
+        "vatCharges_charges": "0.00",
+        "vatCharges_currency": "EUR",
+        "customsCharges_transportInsuranceCharges": "0.00",
+        "customsCharges_currency": "EUR",
+
+        # Prijs / Statistiekwaarde
+        "price": "0.00",
+        "price_exchangeRate": "1.00",
+        "price_currency": "EUR",
+        
+        # Voorgaande Documenten
+        "documentReference": "",     # Referentie van voorgaand document (bijv. factuur)
+        "documentType": "",          # Type van voorgaand document (Code)
+        "previousDocumentCategory": "",
+        "previousDocumentLoc": "",
+        "previousDocumentArt": "",
+        "previousDocumentDate": ""
     }
     return dir

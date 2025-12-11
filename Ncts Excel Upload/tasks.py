@@ -4,6 +4,7 @@ import os
 import shutil
 import psutil
 import statistics
+import numpy as np 
 
 from classes import Declaration
 from templates import templates as temp
@@ -92,20 +93,38 @@ def NCTS_excel_upload():
             elif container in know_contianers:
                 header_data = temp.get_departure_header()
 
-                sum_bruto = df[df.iloc[:,13] == container].sum()
-                sum_netto = df[df.iloc[:,14] == container].sum()
+                sum_packages = df[df.iloc[:,8] == container].iloc[:, 9].sum()
+                sum_bruto = df[df.iloc[:,8] == container].iloc[:, 13].sum()
+                sum_netto = df[df.iloc[:,8] == container].iloc[:, 14].sum()
 
                 header_data["template"] = templatecode
                 header_data["company"] = activecompany
                 header_data["commercialreference"] = referte_vak_7
                 header_data["principal_id"] = opdrachtgever
                 header_data["principal_contactPersonCode"] = contact
-                header_data["ControlPackages"] = aantal_verpakkingen
-                header_data["ControlGrossmass"] = brutogewicht
-                header_data["ControlNetmass"] = netto_gewicht
-                header_data["total_packages"] = aantal_verpakkingen
-                header_data["total_grossmass"] = sum_bruto
+                header_data["ControlPackages"] = sum_packages
+                header_data["ControlGrossmass"] = sum_bruto
                 header_data["ControlNetmass"] = sum_netto
+                header_data["countryOfDestinationCode"] = bestemmelingland
+                header_data["placeOfLoadingCode"] = "" #sql
+                header_data["countryOfDispatchExportCode"] = landvanvertrek
+                if np.isnan(grenstransportmode):
+                    header_data["inlandTransportMode"] = 10
+                else:
+                    header_data["inlandTransportMode"] = grenstransportmode
+
+                header_data["identityOfMeansOfTransportAtDeparture"] = schip
+                header_data["total_packages"] = sum_packages
+                header_data["total_grossmass"] = sum_bruto
+                header_data["total_nettmass"] = sum_netto
+                header_data["consignor_id"] = afzender
+                header_data["consignee_name"] = bestemmeling_naam
+                header_data["consignee_streetAndNumber"] = bestemmeling_straat
+                header_data["consignee_postalCode"] = bestemmelingpostcode
+                header_data["consignee_City"] = bestemmelingplaats
+                header_data["consignee_countryCode"] = bestemmelingland
+                header_data["departureReferenceNumber"] = douanekantoorbestemming
+                header_data["destinationReferenceNumber"] = douanekantoorbestemming #nakijken met taak
 
             item_data = temp.get_departure_item()
 
@@ -130,7 +149,7 @@ def NCTS_excel_upload():
                 previous_doc_items.append(item)
                 havencode = 1 #moet van sql query komen
 
-                previous_doc_str = f"{havencode}{vrachtlijst}{lloydsnummer}"
+                previous_doc_str = f"{havencode}{vrachtlijst}{lloydsnummer}*{artikel}"
                 complement_info_str = f"{carriercode_agentcode}*{str(item).zfill(4)}*{billoflading}"
                 
                 item_data["previousDocumentType"] = "126E"
@@ -150,17 +169,21 @@ def NCTS_excel_upload():
                 with open(output_file_name, "w") as f:
                     f.write(xml_string)
 
-                itemcount = 1 #reset itemcount
+                itemcount = 0 #reset itemcount
                 items = [] #reset items
                 previous_doc_items = [] #reset previous_doc_items
+
+            itemcount += 1
 
         filename_full_archive = f'{archive}incomming/{filename}'
         shutil.move(filename_full, filename_full_archive)
 
-    average = statistics.mean(snapshots)
-    print(f"Gemiddeld geheugen: {average / 1024**2:.2f} MB")
+    if snapshots: # Check if the list is not empty
+        average = statistics.mean(snapshots)
+        print(f"Gemiddeld geheugen: {average / 1024**2:.2f} MB")
+    else:
+        print("No data processed, skipping memory usage calculation.")
 
     end_datetime = datetime.now()
     excecution_time = end_datetime - start_datetime
     print(f'Excecutiontime: {excecution_time}')
-                    

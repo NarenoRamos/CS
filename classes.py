@@ -4,16 +4,42 @@ from collections import defaultdict
 class Declaration():
     def __init__ (self, type: str):
 
+        #Use NCTS template
         if type == 'departure':
             try:
-                with open("./templates/NCTSTemplate.xml", "r", encoding="iso-8859-1") as f:
+                with open("./templates/NCTS_Template.xml", "r", encoding="iso-8859-1") as f:
                     self.departure_header_template = f.read()
                 
-                with open("./templates/NCTSTemplateitem.xml", "r", encoding="iso-8859-1") as f:
+                with open("./templates/NCTS_Item_Template.xml", "r", encoding="iso-8859-1") as f:
                     self.departure_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
                 raise
+
+        #Use PLDA import template
+        if type == 'import':
+            try:
+                with open("./templates/PLDA_ImportTemplate.xml", "r", encoding="iso-8859-1") as f:
+                    self.departure_header_template = f.read()
+                
+                with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
+                    self.departure_item_template = f.read()
+            except FileNotFoundError:
+                print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
+                raise
+        
+        #Use PLDA Export template
+        if type == 'export':
+            try:
+                with open("./templates/PLDA_ExportTemplate.xml", "r", encoding="iso-8859-1") as f:
+                    self.departure_header_template = f.read()
+                
+                with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
+                    self.departure_item_template = f.read()
+            except FileNotFoundError:
+                print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
+                raise
+
 
     def _sanitize_data(self, data_dict):
             """
@@ -65,3 +91,4 @@ class Declaration():
             return final_xml
         except KeyError as e:
             raise ValueError(f"Ontbrekende data in de header: {e}")
+        
