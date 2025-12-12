@@ -14,12 +14,14 @@ start_datetime_str = start_datetime.strftime("%y%m%d%H%M%S")
 
 archive = './archive/'
 incomming_path = './incomming/'
+outgoing_path = './outgoing/'
+
 process = psutil.Process()
 snapshots = []
 
 def main():
-    process = psutil.Process()
-    snapshots = []
+    start_datetime = datetime.now()
+    start_datetime_str = start_datetime.strftime("%y%m%d%H%M%S")
 
     incomming_directory = os.fsencode(incomming_path)
 
@@ -35,7 +37,6 @@ def main():
     end_datetime = datetime.now()
     excecution_time = end_datetime - start_datetime
     print(f'Excecutiontime: {excecution_time}', flush=True)
-
 
 def excel_2_xml(file):
     filename = os.fsdecode(file)
@@ -177,9 +178,9 @@ def excel_2_xml(file):
             header_data["ControlArticles"] = itemcount
             header_data["total_items"] = itemcount
             
-            xml_string = departure.generate_departure_xml_string(header_data, items)
+            xml_string = departure.generate_declaration_xml_string(header_data, items)
 
-            output_file_name = f"./outgoing/{start_datetime_str}_{filename}_{container}_{index + 1}_outgoing.xml"
+            output_file_name = f"{outgoing_path}{start_datetime_str}_{filename}_{container}_{index + 1}_outgoing.xml"
 
             with open(output_file_name, "w") as f:
                 f.write(xml_string)

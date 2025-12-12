@@ -169,12 +169,15 @@ def get_PLDA_header():
         
         "template": "",               # Sjabloon naam
         "company": "",                # Active company
-        "status": "",            # Dossier status (bv. Draft, Sent)
+        "status": "",                 # Dossier status (bv. Draft, Sent)
         "user": "",                   # Gebruikerscode/Naam die de aangifte aanmaakt
         "printLocation": "",          # Print locatie
         "sendDeclaration": "",        # Autosend
         "declarationId": "",          # Declaratie ID
         "procedureType": "",          # Type procedure (bv. S, D)
+
+        # Custom placeholder voor de items, moet altijd aanwezig zijn
+        "goods_items_xml": "",        # Wordt automatisch gevuld door de generate_xml methode!
 
         # ------------------------------------------------------------------
         # Sectie 2: Principal (Hoofdelijk Aansprakelijke/Exporteur)

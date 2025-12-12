@@ -8,10 +8,10 @@ class Declaration():
         if type == 'departure':
             try:
                 with open("./templates/NCTS_Template.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_header_template = f.read()
+                    self.declaration_header_template = f.read()
                 
                 with open("./templates/NCTS_Item_Template.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_item_template = f.read()
+                    self.declaration_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
                 raise
@@ -20,10 +20,10 @@ class Declaration():
         if type == 'import':
             try:
                 with open("./templates/PLDA_ImportTemplate.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_header_template = f.read()
+                    self.declaration_header_template = f.read()
                 
                 with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_item_template = f.read()
+                    self.declaration_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
                 raise
@@ -32,10 +32,10 @@ class Declaration():
         if type == 'export':
             try:
                 with open("./templates/PLDA_ExportTemplate.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_header_template = f.read()
+                    self.declaration_header_template = f.read()
                 
                 with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
-                    self.departure_item_template = f.read()
+                    self.declaration_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
                 raise
@@ -54,7 +54,7 @@ class Declaration():
                     clean_dict[key] = value
             return clean_dict
     
-    def generate_departure_xml_string(self, header_data: dict, items_data: list[dict]) -> str:
+    def generate_declaration_xml_string(self, header_data: dict, items_data: list[dict]) -> str:
         """
         Genereert de volledige XML string.
         
@@ -69,7 +69,7 @@ class Declaration():
             clean_item = self._sanitize_data(item)
             try:
                 # Invullen van de item template
-                item_str = self.departure_item_template.format(**clean_item)
+                item_str = self.declaration_item_template.format(**clean_item)
                 items_xml_parts.append(item_str)
             except KeyError as e:
                 raise ValueError(f"Ontbrekende data in item: {e}")
@@ -87,7 +87,7 @@ class Declaration():
 
         # 3. Genereer de finale XML
         try:
-            final_xml = self.departure_header_template.format(**full_header_data)
+            final_xml = self.declaration_header_template.format(**full_header_data)
             return final_xml
         except KeyError as e:
             raise ValueError(f"Ontbrekende data in de header: {e}")
