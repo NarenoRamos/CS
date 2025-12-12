@@ -1,4 +1,4 @@
-from tasks import #fucntion in taskfolder
+from tasks import main
 import time
 import os
 
@@ -8,7 +8,7 @@ if __name__ == "__main__":
     while infinite_loop:
         try:
             print("Start Execution", flush=True)
-            #fucntion 
+            main()
             time.sleep(60)
         except Exception as e:
             print(f"Error: {e}")
