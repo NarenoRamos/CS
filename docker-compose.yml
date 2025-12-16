@@ -1,45 +1,78 @@
 services:
+  watchdog:
+    build: ./Watchdog #path to dockerfile
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - INFINITE_LOOP=${INFINITE_LOOP} 
+    container_name: Watchdog
+    networks:
+      - csnetwork
+    volumes: 
+      - ./Scripts:/app/Scripts:ro
+      - ./Watchdog/main.py:/app/main.py
+    depends_on: [rabbitmq]
+    command: ["/opt/venv/bin/python3", "main.py"]
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_broker
+    networks:
+      - csnetwork
+    ports:
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   nctsexcelupload:
-    build: ./Ncts Excel Upload
+    image: excel-image
     container_name: NctsExcelUpload
     environment:
-          - INFINITE_LOOP=${INFINITE_LOOP} 
+      - INFINITE_LOOP=${INFINITE_LOOP} 
+    networks:
+      - csnetwork
     volumes:
-      - ./Ncts Excel Upload/archive:/app/archive
-      - ./Ncts Excel Upload/incomming:/app/incomming
-      - ./Ncts Excel Upload/outgoing:/app/outgoing
-      - ./Ncts Excel Upload/main.py:/app/main.py
-      - ./Ncts Excel Upload/tasks.py:/app/tasks.py
+      - ./Scripts/Ncts Excel Upload:/app
 
       - ./classes.py:/app/classes.py
       - ./templates:/app/templates
-
     command: ["/opt/venv/bin/python3", "main.py"]
 
   stevocatimport:
-    build: ./Stevocat/PLDA
+    image: excel-image
     container_name: StevocatImport
+    networks:
+      - csnetwork
     environment:
       - INFINITE_LOOP=${INFINITE_LOOP} 
       - DOCPARSER_API_KEY=${DOCPARSER_API_KEY} 
       - PARSER_ID=lnfycbyzpjsa
     volumes:
-      - ./Stevocat/PLDA/archive:/app/archive
-      - ./Stevocat/PLDA/incomming:/app/incomming
-      - ./Stevocat/PLDA/outgoing:/app/outgoing
-      - ./Stevocat/PLDA/main.py:/app/main.py
-      - ./Stevocat/PLDA/tasks.py:/app/tasks.py
+      - ./Scripts/Stevocat/PLDA:/app
 
       - ./classes.py:/app/classes.py
       - ./templates:/app/templates
-
     command: ["/opt/venv/bin/python3", "main.py"]    
+
+networks:
+  csnetwork: 
+    external: true
+
+volumes:
+  rabbitmq_data:
 
   # project:
   #   build: ./Project #path to dockerfile
   #   environment:
-  #         - INFINITE_LOOP=${INFINITE_LOOP} 
+  #     - INFINITE_LOOP=${INFINITE_LOOP} 
   #   container_name: Project
+  #   network:
+  #     - csnetwork
   #   volumes:
   #     - ./Project/archive:/app/archive
   #     - ./Project/incomming:/app/incomming
