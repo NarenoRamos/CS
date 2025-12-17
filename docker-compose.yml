@@ -33,14 +33,20 @@ services:
     image: excel-image
     container_name: NctsExcelUpload
     environment:
-      - INFINITE_LOOP=${INFINITE_LOOP} 
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - ROUTING_KEY=Ncts Excel Upload/incomming
+      - QUEUE_NAME=ncts_excel_queue
     networks:
       - csnetwork
     volumes:
       - ./Scripts/Ncts Excel Upload:/app
 
-      - ./classes.py:/app/classes.py
-      - ./templates:/app/templates
+      - ./classes.py:/app/classes.py:ro
+      - ./templates:/app/templates:ro
+    depends_on: [rabbitmq] 
     command: ["/opt/venv/bin/python3", "main.py"]
 
   stevocatimport:
@@ -49,14 +55,19 @@ services:
     networks:
       - csnetwork
     environment:
-      - INFINITE_LOOP=${INFINITE_LOOP} 
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - ROUTING_KEY=Stevocat/PLDA/incomming
+      - QUEUE_NAME=stevocat_import_queue
       - DOCPARSER_API_KEY=${DOCPARSER_API_KEY} 
       - PARSER_ID=lnfycbyzpjsa
     volumes:
       - ./Scripts/Stevocat/PLDA:/app
 
-      - ./classes.py:/app/classes.py
-      - ./templates:/app/templates
+      - ./classes.py:/app/classes.py:ro
+      - ./templates:/app/templates:ro
     command: ["/opt/venv/bin/python3", "main.py"]    
 
 networks:
@@ -66,11 +77,16 @@ networks:
 volumes:
   rabbitmq_data:
 
-  # project:
-  #   build: ./Project #path to dockerfile
+  # project: #customize
+  #   image: #prebuild image
   #   environment:
-  #     - INFINITE_LOOP=${INFINITE_LOOP} 
-  #   container_name: Project
+  #     - RABBITMQ_HOST=${RABBITMQ_HOST}
+  #     - EXCHANGE_NAME=${EXCHANGE_NAME}
+  #     - RABBITMQ_USER=${RABBITMQ_USER}
+  #     - RABBITMQ_PASS=${RABBITMQ_PASS}
+  #     - ROUTING_KEY=project/incomming #customize
+  #     - QUEUE_NAME=project_queue #customize
+  #   container_name: Project #customize
   #   network:
   #     - csnetwork
   #   volumes:
