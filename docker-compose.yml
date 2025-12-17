@@ -1,6 +1,6 @@
 services:
   watchdog:
-    build: ./Watchdog #path to dockerfile
+    build: ./watchdog #path to dockerfile
     environment:
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - EXCHANGE_NAME=${EXCHANGE_NAME}
@@ -11,8 +11,8 @@ services:
     networks:
       - csnetwork
     volumes: 
-      - ./Scripts:/app/Scripts:ro
-      - ./Watchdog/main.py:/app/main.py
+      - ./scripts:/app/Scripts:ro
+      - ./watchdog/main.py:/app/main.py
       - ./config.txt:/config/config.txt:ro
     depends_on: [rabbitmq]
     command: ["/opt/venv/bin/python3", "main.py"]
@@ -44,7 +44,7 @@ services:
     networks:
       - csnetwork
     volumes:
-      - ./Scripts/Ncts Excel Upload:/app
+      - ./scripts/Ncts Excel Upload:/app
 
       - ./shared/classes.py:/shared/classes.py:ro
       - ./shared/templates:/shared/templates:ro
@@ -67,7 +67,7 @@ services:
       - DOCPARSER_API_KEY=${DOCPARSER_API_KEY} 
       - PARSER_ID=lnfycbyzpjsa
     volumes:
-      - ./Scripts/Stevocat/PLDA:/app
+      - ./scripts/Stevocat/PLDA:/app
 
       - ./shared/classes.py:/shared/classes.py:ro
       - ./shared/templates:/shared/templates:ro
