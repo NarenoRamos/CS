@@ -1,28 +1,31 @@
 import xml.sax.saxutils as saxutils
 from collections import defaultdict
+import os
     
 class Declaration():
     def __init__ (self, type: str):
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        template_folder = os.path.join(base_path, "templates")
 
         #Use NCTS template
         if type == 'departure':
             try:
-                with open("./templates/NCTS_Template.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "NCTS_Template.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_header_template = f.read()
                 
-                with open("./templates/NCTS_Item_Template.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "NCTS_Item_Template.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_item_template = f.read()
             except FileNotFoundError:
-                print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
+                print(f"FOUT: Kan de template bestanden niet vinden in {template_folder}")
                 raise
 
         #Use PLDA import template
         if type == 'import':
             try:
-                with open("./templates/PLDA_ImportTemplate.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "PLDA_ImportTemplate.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_header_template = f.read()
                 
-                with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "PLDA_ItemTemplate.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")
@@ -31,10 +34,10 @@ class Declaration():
         #Use PLDA Export template
         if type == 'export':
             try:
-                with open("./templates/PLDA_ExportTemplate.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "PLDA_ExportTemplate.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_header_template = f.read()
                 
-                with open("./templates/PLDA_ItemTemplate.xml", "r", encoding="iso-8859-1") as f:
+                with open(os.path.join(template_folder, "PLDA_ItemTemplate.xml"), "r", encoding="iso-8859-1") as f:
                     self.declaration_item_template = f.read()
             except FileNotFoundError:
                 print("FOUT: Kan de template bestanden niet vinden in de map ./templates/")

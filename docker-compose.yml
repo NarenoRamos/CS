@@ -40,13 +40,14 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
       - ROUTING_KEY=Ncts Excel Upload/incomming
       - QUEUE_NAME=ncts_excel_queue
+      - PYTHONPATH=/shared  # belangrijk!
     networks:
       - csnetwork
     volumes:
       - ./Scripts/Ncts Excel Upload:/app
 
-      - ./classes.py:/app/classes.py:ro
-      - ./templates:/app/templates:ro
+      - ./shared/classes.py:/shared/classes.py:ro
+      - ./shared/templates:/shared/templates:ro
     depends_on: [rabbitmq] 
     command: ["/opt/venv/bin/python3", "main.py"]
 
@@ -62,13 +63,14 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
       - ROUTING_KEY=Stevocat/PLDA/incomming
       - QUEUE_NAME=stevocat_import_queue
+      - PYTHONPATH=/shared # belangrijk!
       - DOCPARSER_API_KEY=${DOCPARSER_API_KEY} 
       - PARSER_ID=lnfycbyzpjsa
     volumes:
       - ./Scripts/Stevocat/PLDA:/app
 
-      - ./classes.py:/app/classes.py:ro
-      - ./templates:/app/templates:ro
+      - ./shared/classes.py:/shared/classes.py:ro
+      - ./shared/templates:/shared/templates:ro
     command: ["/opt/venv/bin/python3", "main.py"]    
 
 networks:
@@ -87,6 +89,7 @@ volumes:
   #     - RABBITMQ_PASS=${RABBITMQ_PASS}
   #     - ROUTING_KEY=project/incomming #customize
   #     - QUEUE_NAME=project_queue #customize
+  #     - PYTHONPATH=/shared
   #   container_name: Project #customize
   #   network:
   #     - csnetwork
@@ -97,7 +100,7 @@ volumes:
   #     - ./Project/main.py:/app/main.py
   #     - ./Project/tasks.py:/app/tasks.py
 
-  #     - ./classes.py:/app/classes.py
-  #     - ./templates:/app/templates
+  #     - ./shared/classes.py:/shared/classes.py
+  #     - ./shared/templates:/shared/templates
 
   #   command: ["/opt/venv/bin/python3", "main.py"]
