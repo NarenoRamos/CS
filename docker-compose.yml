@@ -13,6 +13,7 @@ services:
     volumes: 
       - ./Scripts:/app/Scripts:ro
       - ./Watchdog/main.py:/app/main.py
+      - ./config.txt:/config/config.txt:ro
     depends_on: [rabbitmq]
     command: ["/opt/venv/bin/python3", "main.py"]
 

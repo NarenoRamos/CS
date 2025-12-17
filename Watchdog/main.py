@@ -58,26 +58,39 @@ class FileHandler(FileSystemEventHandler):
             publish_task(file_path, routing_key)
             print(f"Detected: {routing_key}", flush=True)
 
+def return_watchdog_dirs():
+    with open("/config/config.txt") as f:
+        return [line.strip() for line in f if line.strip()]
+
+watched_paths = set()
+
+def update_watched_dirs(observer, event_handler):
+    new_paths = set(return_watchdog_dirs())
+    for path in new_paths - watched_paths:
+        if not os.path.isdir(path):
+            print(f"⚠️ Pad bestaat niet of is geen directory: {path}", flush=True)
+            continue
+
+        try:
+            observer.schedule(event_handler, path, recursive=False)
+            watched_paths.add(path)
+            print(f"✅ Nieuwe dir toegevoegd aan watchdog: {path}", flush=True)
+        except Exception as e:
+            print(f"❌ Fout bij toevoegen van {path}: {e}", flush=True)
+
 
 if __name__ == "__main__":
-    print(f"Start monitoring dirs...", flush=True)
-    
-    # De paden die we monitoren IN de container (komen overeen met de volumes)
-    paths_to_watch = ['./Scripts/Ncts Excel Upload/incomming', 
-                      './Scripts/Stevocat/PLDA/incomming'
-                      ] 
-    
+    print("Start monitoring dirs...", flush=True)
+
     event_handler = FileHandler()
     observer = Observer()
-
-    for path in paths_to_watch:
-        # Recursive=True als je ook submappen wilt monitoren
-        observer.schedule(event_handler, path, recursive=False)
-
     observer.start()
+
     try:
         while True:
-            time.sleep(1)
+            update_watched_dirs(observer, event_handler)
+            time.sleep(5)  # elke 5 sec checken
     except KeyboardInterrupt:
         observer.stop()
+
     observer.join()
