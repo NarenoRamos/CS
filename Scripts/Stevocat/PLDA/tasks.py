@@ -66,26 +66,21 @@ def send_2_docparser(file):
     data = response.json()
     data = data[0]
 
-    print(type(data), flush=True)
     return data
 
 def json_2_xml(data):
     global filename, file_path, start_datetime, start_datetime_str
 
-    print(type(data), flush=True)
     im_declaration = Declaration("import")
 
     header_data = temp.get_PLDA_header()
     item_data = temp.get_PLDA_item()
 
-    print(header_data["template"], flush=True)
-    print(item_data["netMass"], flush=True)
-
     header_data["template"] = "STEVOCAT_AUTO_IM"
     header_data["company"] = "ACS"
     header_data["sendDeclaration"] = autosend
 
-    item_data["commodityCode"] = data["6_14_commodity_code"]
+    # item_data["commodityCode"] = data["6_14_commodity_code"]
 
     items = [item_data]
 
