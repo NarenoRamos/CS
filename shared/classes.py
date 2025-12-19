@@ -1,5 +1,6 @@
 import xml.sax.saxutils as saxutils
 from collections import defaultdict
+import requests
 import os
     
 class Declaration():
@@ -95,3 +96,43 @@ class Declaration():
         except KeyError as e:
             raise ValueError(f"Ontbrekende data in de header: {e}")
         
+class Docparser():
+    def __init__(self):
+        self.docparser_api_key = os.environ.get('DOCPARSER_API_KEY')
+        self.parser_id = os.environ.get('PARSER_ID')
+
+    def upload_file(self, file_path):
+        filename = os.fsdecode(file_path)
+
+        post_url = f"https://api.docparser.com/v1/document/upload/{self.parser_id}"
+        
+        print(f"Sending file {filename} to parser:{self.parser_id}", flush=True)
+        with open(file_path, "rb") as f:
+            files = {"file": f}
+            response = requests.post(post_url, files=files, auth=(self.docparser_api_key, ""))
+            data = response.json()
+
+            if isinstance(data, list):
+                data = data[0]
+
+            return data
+        
+    def return_json(self, upload_response):
+        if not 'id' in upload_response:
+            print(f"ERROR: No id found in response", flush=True)
+            raise 
+        else:
+            document_id = upload_response.get("id")
+
+        print(f"Fetching JSON", flush=True)
+        fetch_url = f"https://api.docparser.com/v1/results/{self.parser_id}/{document_id}"
+        response = requests.get(fetch_url, auth=(self.docparser_api_key, ""))
+
+        data = response.json()
+        if isinstance(data, list):
+            data = data[0]
+            
+        return data
+    
+    
+
