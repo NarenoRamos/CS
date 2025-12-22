@@ -1,6 +1,23 @@
 services:
+  maildispatcher:
+    build: ./communication/maildispatcher #path to dockerfile
+    environment:
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    container_name: maildispatcher
+    networks:
+      - csnetwork
+    volumes: 
+      - ./scripts:/scripts
+      - ./communication/maildispatcher/main.py:/app/main.py
+      - ./communication/maildispatcher/config.json:/config/config.json
+    depends_on: [rabbitmq]
+    command: ["/opt/venv/bin/python3", "main.py"]
+
   watchdog:
-    build: ./watchdog #path to dockerfile
+    build: ./communication/watchdog #path to dockerfile
     environment:
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - EXCHANGE_NAME=${EXCHANGE_NAME}
@@ -12,7 +29,7 @@ services:
       - csnetwork
     volumes: 
       - ./scripts:/app/Scripts:ro
-      - ./watchdog/main.py:/app/main.py
+      - ./communication/watchdog/main.py:/app/main.py
       - ./config.txt:/config/config.txt:ro
     depends_on: [rabbitmq]
     command: ["/opt/venv/bin/python3", "main.py"]

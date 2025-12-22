@@ -1,8 +1,6 @@
 import xml.sax.saxutils as saxutils
 from collections import defaultdict
 import smtplib
-import imaplib
-import email
 from email.message import EmailMessage
 import requests
 import os
@@ -141,11 +139,11 @@ class Docparser():
     
 class Mail():
     def __init__(self):
-        self.smtp_host = "smtp.gmail.com"
-        self.smtp_port = 587
+        self.smtp_host = os.environ.get('SMTP_HOST')
+        self.smtp_port = os.environ.get('SMTP_PORT')
 
-        self.username = "giani.narenoramos@gmail.com"
-        self.app_password = "raug ixso uatc fwif"   # maak via je Google-account (2FA vereist)
+        self.username = os.environ.get('SMTP_USER')
+        self.app_password = os.environ.get('SMTP_PASS') 
 
     def sendmail(self, message, to):
         msg = EmailMessage()
@@ -164,40 +162,3 @@ class Mail():
         # Verwijder tekens die niet in bestandsnamen mogen
         return re.sub(r'[\\/*?:"<>|]', "", name).strip()
     
-    def save_mail(self, substring, dir):
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
-        mail.login(self.username, self.app_password )
-        mail.select("inbox")
-
-        status, data = mail.search(None, f'(SUBJECT "{substring}")')
-        mail_ids = data[0].split()
-
-        if not mail_ids:
-            print(f"No mails found with '{substring}' in subject.")
-            return
-        
-        print(f"{len(mail_ids)} mails found. Saving mail...")
-
-        #hieronder nakijken
-
-        for m_id in mail_ids:
-            # 3. Haal de ruwe data op (RFC822 is het .eml formaat)
-            status, msg_data = mail.fetch(m_id, "(RFC822)")
-            raw_email = msg_data[0][1] # Dit zijn de ruwe bytes
-
-            # 4. Onderwerp ophalen voor de bestandsnaam
-            # We gebruiken een simpele fetch voor de header om de naam te bepalen
-            status, header_data = mail.fetch(m_id, "(BODY[HEADER.FIELDS (SUBJECT)])")
-            subject = header_data[0][1].decode().replace("Subject: ", "").strip()
-            
-            filename = self._sanitize_filename(f"{subject}_{m_id.decode()}.eml")
-            filepath = os.path.join(dir, filename)
-
-            # 5. Opslaan als binary file
-            with open(filepath, "wb") as f:
-                f.write(raw_email)
-            
-            print(f"Opgeslagen: {filename}")
-
-        mail.logout()
-
