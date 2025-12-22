@@ -1,3 +1,31 @@
+include:
+#  - ./docker-compose-scripts/A.yml
+#  - ./docker-compose-scripts/B.yml
+#  - ./docker-compose-scripts/C.yml
+#  - ./docker-compose-scripts/D.yml
+#  - ./docker-compose-scripts/E.yml
+#  - ./docker-compose-scripts/F.yml
+#  - ./docker-compose-scripts/G.yml
+#  - ./docker-compose-scripts/H.yml
+#  - ./docker-compose-scripts/I.yml
+#  - ./docker-compose-scripts/J.yml
+#  - ./docker-compose-scripts/K.yml
+#  - ./docker-compose-scripts/L.yml
+#  - ./docker-compose-scripts/M.yml
+ - ./docker-compose-scripts/N.yml
+#  - ./docker-compose-scripts/O.yml
+#  - ./docker-compose-scripts/P.yml
+#  - ./docker-compose-scripts/Q.yml
+#  - ./docker-compose-scripts/R.yml
+ - ./docker-compose-scripts/S.yml
+#  - ./docker-compose-scripts/T.yml
+#  - ./docker-compose-scripts/U.yml
+#  - ./docker-compose-scripts/V.yml
+#  - ./docker-compose-scripts/W.yml
+#  - ./docker-compose-scripts/X.yml
+#  - ./docker-compose-scripts/Y.yml
+#  - ./docker-compose-scripts/Z.yml
+
 services:
   maildispatcher:
     build: ./communication/maildispatcher #path to dockerfile
@@ -47,49 +75,6 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
-  nctsexcelupload:
-    image: excel-image
-    container_name: NctsExcelUpload
-    environment:
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - EXCHANGE_NAME=${EXCHANGE_NAME}
-      - RABBITMQ_USER=${RABBITMQ_USER}
-      - RABBITMQ_PASS=${RABBITMQ_PASS}
-      - ROUTING_KEY=Ncts Excel Upload/incomming
-      - QUEUE_NAME=ncts_excel_queue
-      - PYTHONPATH=/shared  # belangrijk!
-    networks:
-      - csnetwork
-    volumes:
-      - ./scripts/Ncts Excel Upload:/app
-
-      - ./shared/classes.py:/shared/classes.py:ro
-      - ./shared/templates:/shared/templates:ro
-    depends_on: [rabbitmq] 
-    command: ["/opt/venv/bin/python3", "main.py"]
-
-  stevocatimport:
-    image: excel-image
-    container_name: StevocatImport
-    networks:
-      - csnetwork
-    environment:
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - EXCHANGE_NAME=${EXCHANGE_NAME}
-      - RABBITMQ_USER=${RABBITMQ_USER}
-      - RABBITMQ_PASS=${RABBITMQ_PASS}
-      - ROUTING_KEY=Stevocat/PLDA/incomming
-      - QUEUE_NAME=stevocat_import_queue
-      - PYTHONPATH=/shared # belangrijk!
-      - DOCPARSER_API_KEY=${DOCPARSER_API_KEY} 
-      - PARSER_ID=lnfycbyzpjsa
-    volumes:
-      - ./scripts/Stevocat/PLDA:/app
-
-      - ./shared/classes.py:/shared/classes.py:ro
-      - ./shared/templates:/shared/templates:ro
-    command: ["/opt/venv/bin/python3", "main.py"]    
-
 networks:
   csnetwork: 
     external: true
@@ -97,27 +82,23 @@ networks:
 volumes:
   rabbitmq_data:
 
-  # project: #customize
-  #   image: #prebuild image
-  #   environment:
-  #     - RABBITMQ_HOST=${RABBITMQ_HOST}
-  #     - EXCHANGE_NAME=${EXCHANGE_NAME}
-  #     - RABBITMQ_USER=${RABBITMQ_USER}
-  #     - RABBITMQ_PASS=${RABBITMQ_PASS}
-  #     - ROUTING_KEY=project/incomming #customize
-  #     - QUEUE_NAME=project_queue #customize
-  #     - PYTHONPATH=/shared
-  #   container_name: Project #customize
-  #   network:
+  # project_naam: 
+  #   image: excel-image  # Gebruik hier je standaard image naam
+  #   container_name: Project_Container_Naam
+  #   networks:
   #     - csnetwork
+  #   environment:
+  #     RABBITMQ_HOST: ${RABBITMQ_HOST}
+  #     EXCHANGE_NAME: ${EXCHANGE_NAME}
+  #     RABBITMQ_USER: ${RABBITMQ_USER}
+  #     RABBITMQ_PASS: ${RABBITMQ_PASS}
+  #     ROUTING_KEY: "project/incomming"
+  #     QUEUE_NAME: "project_queue"
+  #     PYTHONPATH: "/shared"
   #   volumes:
-  #     - ./Project/archive:/app/archive
-  #     - ./Project/incomming:/app/incomming
-  #     - ./Project/outgoing:/app/outgoing
-  #     - ./Project/main.py:/app/main.py
-  #     - ./Project/tasks.py:/app/tasks.py
-
-  #     - ./shared/classes.py:/shared/classes.py
-  #     - ./shared/templates:/shared/templates
-
+  #     - "../scripts/Project:/app"
+  #     - "../Project/main.py:/app/main.py"
+  #     - "../Project/tasks.py:/app/tasks.py"
+  #     - "../shared/classes.py:/shared/classes.py:ro"
+  #     - "../shared/templates:/shared/templates:ro"
   #   command: ["/opt/venv/bin/python3", "main.py"]

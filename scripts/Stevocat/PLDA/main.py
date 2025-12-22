@@ -1,7 +1,6 @@
 from tasks import main
-import time
 import os
-import pika
+import pika # type: ignore
 import json
 
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')
@@ -11,8 +10,6 @@ RABBITMQ_PASS = os.getenv('RABBITMQ_PASS')
 
 ROUTING_KEY = os.getenv('ROUTING_KEY') 
 QUEUE_NAME = os.getenv('QUEUE_NAME')  
-
-infinite_loop = os.environ.get('INFINITE_LOOP', 'False').lower() == 'true'
 
 def process_task(ch, method, properties, body):
     # ... (logica om de taak te verwerken is hetzelfde) ...
