@@ -1,17 +1,24 @@
 services:
-  stevocatimport:
+  stevocatimportincomming:
     image: excel-image
-    container_name: StevocatImport
+    container_name: StevocatImportIncomming
     networks:
       - csnetwork
     environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       EXCHANGE_NAME: ${EXCHANGE_NAME}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       ROUTING_KEY: "Stevocat/PLDA/incomming"
       QUEUE_NAME: "stevocat_import_incomming_queue"
+
       PYTHONPATH: "/shared"
+
       DOCPARSER_API_KEY: ${DOCPARSER_API_KEY} 
       PARSER_ID: "lnfycbyzpjsa"
     volumes:
@@ -19,3 +26,30 @@ services:
       - "../shared/classes.py:/shared/classes.py:ro"
       - "../shared/templates:/shared/templates:ro"
     command: ["/opt/venv/bin/python3", "main.py"]
+
+  stevocatimportmailincomming:
+    image: excel-image
+    container_name: stevocatimportmailincomming
+    networks:
+      - csnetwork
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      EXCHANGE_NAME: ${EXCHANGE_NAME}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+
+      ROUTING_KEY: "Stevocat/PLDA/mailincomming"
+      QUEUE_NAME: "stevocat_import_mailincomming_queue"
+      
+      PYTHONPATH: "/shared"
+    volumes:
+      - "../scripts/Stevocat/PLDA:/app"
+
+      - "../shared/classes.py:/shared/classes.py:ro"
+      - "../shared/templates:/shared/templates:ro"
+    command: ["/opt/venv/bin/python3", "mailincomming.py"]

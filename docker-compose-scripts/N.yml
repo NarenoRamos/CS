@@ -3,17 +3,25 @@ services:
     image: excel-image
     container_name: NctsExcelUpload
     environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       EXCHANGE_NAME: ${EXCHANGE_NAME}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+
       ROUTING_KEY: "Ncts Excel Upload/incomming"
       QUEUE_NAME: "ncts_excel_queue"
+
       PYTHONPATH: "/shared"
     networks:
       - csnetwork
     volumes:
       - "../scripts/Ncts Excel Upload:/app"
+      
       - "../shared/classes.py:/shared/classes.py:ro"
       - "../shared/templates:/shared/templates:ro"
     command: ["/opt/venv/bin/python3", "main.py"]

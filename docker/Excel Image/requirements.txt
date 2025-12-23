@@ -3,3 +3,5 @@ psutil
 openpyxl
 pika
 requests
+lxml
+psycopg2-binary

@@ -4,8 +4,13 @@ import smtplib
 from email.message import EmailMessage
 import requests
 import os
-import re
-    
+from email import policy
+from email.parser import BytesParser
+import shutil
+import psycopg2
+import pandas as pd
+
+
 class Declaration():
     def __init__ (self, type: str):
         base_path = os.path.dirname(os.path.abspath(__file__))
@@ -158,7 +163,91 @@ class Mail():
             smtp.login(self.username, self.app_password)
             smtp.send_message(msg)
 
-    def _sanitize_filename(self, name):
-        # Verwijder tekens die niet in bestandsnamen mogen
-        return re.sub(r'[\\/*?:"<>|]', "", name).strip()
+    @staticmethod
+    def mail_parser(mail_file, attachements_dir, datetime_str, error_dir):
+        if not mail_file.endswith('.eml'):
+            shutil.move(mail_file, error_dir)
+            print(f"File: {filename} is no eml file, moved to error folder.")
+            return
+        
+        with open(mail_file, "rb") as f:
+            msg = BytesParser(policy=policy.default).parse(f)
+
+        sender = msg["From"]
+        receiver = msg["To"]
+        subject = msg["Subject"]
+        date = msg["Date"]
+
+        html_body = msg.get_body(preferencelist=('html',))
+        
+        if html_body:
+            body_content = html_body.get_content()
+        else:
+            print("Geen HTML body gevonden in deze mail.")
+            body_content = ""
+
+        for part in msg.iter_attachments():
+            filename = part.get_filename()
+            if filename:
+                filepath = os.path.join(attachements_dir, f"{datetime_str}_{filename}")
+                with open(filepath, "wb") as f:
+                    f.write(part.get_payload(decode=True))
+                print(f"Attachment saved: {filename}", flush=True)
+
+        return (sender, receiver, subject, date, body_content)
     
+class DatabaseManager:
+    def __init__(self):
+        self.host = os.getenv('POSTGRES_HOST')
+        self.database = os.getenv('POSTGRES_DB')
+        self.user = os.getenv('POSTGRES_USER')
+        self.password = os.getenv('POSTGRES_PASSWORD')
+        self.port = os.getenv('DB_PORT')
+
+    def _get_connection(self):
+        return psycopg2.connect(
+            host=self.host,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+            port=self.port
+        )
+    
+    def execute_query(self, query, params=None):
+        """
+        Voert een query uit (INSERT, UPDATE, DELETE) en commit de wijzigingen.
+        """
+        conn = None
+        try:
+            conn = self._get_connection()
+            with conn.cursor() as cur:
+                cur.execute(query, params)
+                conn.commit()
+                # Geeft het aantal aangepaste rijen terug (handig voor logging)
+                return cur.rowcount 
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"Fout bij uitvoeren query: {e}", flush=True)
+            return None
+        finally:
+            if conn:
+                conn.close()
+
+    def fetch_as_dataframe(self, query, params=None):
+        """
+        Voert een SELECT query uit en geeft het resultaat terug als een Pandas DataFrame.
+        Inclusief de juiste kolomnamen uit de database.
+        """
+        conn = None
+        try:
+            conn = self._get_connection()
+            # Gebruik pandas.read_sql voor de meest directe conversie
+            df = pd.read_sql(query, conn, params=params)
+            return df
+        except Exception as e:
+            print(f"Fout bij ophalen DataFrame: {e}", flush=True)
+            return None
+        finally:
+            if conn:
+                conn.close()

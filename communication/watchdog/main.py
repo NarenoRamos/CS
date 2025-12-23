@@ -50,7 +50,7 @@ class FileHandler(FileSystemEventHandler):
             path_parts = event.src_path.strip('/').split('/')
 
             # routing_key = 'Ncts Excel Upload/incomming'
-            routing_key = '/'.join(path_parts[2:-1])
+            routing_key = '/'.join(path_parts[1:-1])
 
             # file_path = ./incomming/contcontainer.xls
             file_path = f"./{'/'.join(path_parts[3:])}"

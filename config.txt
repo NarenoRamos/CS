@@ -1,3 +1,4 @@
-./Scripts/Ncts Excel Upload/incomming
-./Scripts/Stevocat/PLDA/incomming
-./Scripts/Stevocat/NCTS
+/scripts/Ncts Excel Upload/incomming
+/scripts/Stevocat/PLDA/incomming
+/scripts/Stevocat/NCTS
+/scripts/Stevocat/PLDA/mailincomming
