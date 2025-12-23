@@ -1,4 +1,4 @@
-from tasks import main
+from tasks import read_mailincomming
 import os
 import pika # type: ignore
 import json
@@ -21,10 +21,7 @@ def process_task(ch, method, properties, body):
         print(f" [*] Worker {ROUTING_KEY} verwerkt bestand: {file_path}", flush=True)
         # Voer de specifieke taaklogica voor 'taak1' of 'taak2' hier uit
         
-        result = main()
-
-        if result == 0:
-            ch.basic_nack(delivery_tag=method.delivery_tag) # Stuur de taak terug
+        read_mailincomming()
         
         ch.basic_ack(delivery_tag=method.delivery_tag)
         print(f" [*] Taak {ROUTING_KEY} voltooid en bericht bevestigd.", flush=True)
