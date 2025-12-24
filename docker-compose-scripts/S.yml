@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${DB_PORT}
 
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       EXCHANGE_NAME: ${EXCHANGE_NAME}
@@ -37,6 +38,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: ${DB_PORT}
 
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       EXCHANGE_NAME: ${EXCHANGE_NAME}
@@ -48,8 +50,8 @@ services:
       
       PYTHONPATH: "/shared"
     volumes:
-      - "../scripts/Stevocat/PLDA:/app"
+      - "../scripts/Stevocat:/app"
 
       - "../shared/classes.py:/shared/classes.py:ro"
       - "../shared/templates:/shared/templates:ro"
-    command: ["/opt/venv/bin/python3", "mailincomming.py"]
+    command: ["/opt/venv/bin/python3", "./PLDA/mailincomming.py"]

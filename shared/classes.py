@@ -7,8 +7,8 @@ import os
 from email import policy
 from email.parser import BytesParser
 import shutil
-import psycopg2
 import pandas as pd
+from sqlalchemy import create_engine, text
 
 
 class Declaration():
@@ -198,56 +198,40 @@ class Mail():
     
 class DatabaseManager:
     def __init__(self):
-        self.host = os.getenv('POSTGRES_HOST')
-        self.database = os.getenv('POSTGRES_DB')
-        self.user = os.getenv('POSTGRES_USER')
-        self.password = os.getenv('POSTGRES_PASSWORD')
-        self.port = os.getenv('DB_PORT')
+        host = os.getenv('POSTGRES_HOST')
+        database = os.getenv('POSTGRES_DB')
+        user = os.getenv('POSTGRES_USER')
+        password = os.getenv('POSTGRES_PASSWORD')
+        port = os.getenv('DB_PORT')
 
-    def _get_connection(self):
-        return psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.user,
-            password=self.password,
-            port=self.port
-        )
+        self.db_uri = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+
+        self.engine = create_engine(self.db_uri, pool_pre_ping=True)
     
     def execute_query(self, query, params=None):
         """
-        Voert een query uit (INSERT, UPDATE, DELETE) en commit de wijzigingen.
+        Voert een query uit (INSERT, UPDATE, DELETE) met automatische commit.
         """
-        conn = None
         try:
-            conn = self._get_connection()
-            with conn.cursor() as cur:
-                cur.execute(query, params)
-                conn.commit()
-                # Geeft het aantal aangepaste rijen terug (handig voor logging)
-                return cur.rowcount 
+            # engine.begin() opent een transactie en commit automatisch aan het einde
+            with self.engine.begin() as conn:
+                # We gebruiken text() voor SQLAlchemy compatibiliteit
+                result = conn.execute(text(query), params or {})
+                return result.rowcount 
         except Exception as e:
-            if conn:
-                conn.rollback()
             print(f"Fout bij uitvoeren query: {e}", flush=True)
             return None
-        finally:
-            if conn:
-                conn.close()
 
     def fetch_as_dataframe(self, query, params=None):
         """
         Voert een SELECT query uit en geeft het resultaat terug als een Pandas DataFrame.
-        Inclusief de juiste kolomnamen uit de database.
+        Dit lost de UserWarning op.
         """
-        conn = None
         try:
-            conn = self._get_connection()
-            # Gebruik pandas.read_sql voor de meest directe conversie
-            df = pd.read_sql(query, conn, params=params)
-            return df
+            # Gebruik de engine direct in pandas
+            with self.engine.connect() as conn:
+                df = pd.read_sql(text(query), conn, params=params)
+                return df
         except Exception as e:
             print(f"Fout bij ophalen DataFrame: {e}", flush=True)
             return None
-        finally:
-            if conn:
-                conn.close()

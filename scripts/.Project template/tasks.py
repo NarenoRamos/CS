@@ -14,12 +14,15 @@ archive = './archive/'
 incomming_path = './incomming/'
 outgoing_path = './outgoing/'
 
-def main():
-    incomming_directory = os.fsencode(incomming_path)
+def main(file_path):
+    global start_datetime, start_datetime_str
 
-    for file in os.listdir(incomming_directory):
-        # create file in outgoing dir
-        return 0
+    start_datetime = datetime.now()
+    start_datetime_str = start_datetime.strftime("%y%m%d%H%M%S")
+
+    filename = os.path.basename(file_path)
+
+    #function(filename)
     
     end_datetime = datetime.now()
     excecution_time = end_datetime - start_datetime

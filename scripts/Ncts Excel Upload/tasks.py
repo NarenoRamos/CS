@@ -2,8 +2,6 @@ import pandas as pd
 from datetime import datetime
 import os
 import shutil
-import psutil
-import statistics
 import numpy as np 
 
 from classes import Declaration
@@ -16,33 +14,22 @@ archive = './archive/'
 incomming_path = './incomming/'
 outgoing_path = './outgoing/'
 
-process = psutil.Process()
-snapshots = []
+def main(file_path):
+    global start_datetime, start_datetime_str
 
-def main():
     start_datetime = datetime.now()
     start_datetime_str = start_datetime.strftime("%y%m%d%H%M%S")
 
-    incomming_directory = os.fsencode(incomming_path)
-
-    for file in os.listdir(incomming_directory):
-        excel_2_xml(file)
-
-    if snapshots: # Check if the list is not empty
-        average = statistics.mean(snapshots)
-        print(f"Gemiddeld geheugen: {average / 1024**2:.2f} MB", flush=True)
-    else:
-        print("No data processed, skipping memory usage calculation.", flush=True)
+    excel_2_xml(file_path)
 
     end_datetime = datetime.now()
     excecution_time = end_datetime - start_datetime
     print(f'Excecutiontime: {excecution_time}', flush=True)
 
-def excel_2_xml(file):
-    filename = os.fsdecode(file)
-    filename_full = f"{incomming_path}{filename}"
+def excel_2_xml(file_path):
+    filename = os.path.basename(file_path)
 
-    df = pd.read_excel(filename_full, engine="openpyxl", header=1)
+    df = pd.read_excel(file_path, engine="openpyxl", header=1)
     df.columns = df.columns.str.replace(r'\n', ' ', regex=True).str.strip()
 
     if df.iloc[2, 9] == 0 and df.iloc[2, 9] == 0:
@@ -56,8 +43,6 @@ def excel_2_xml(file):
     itemcount = 1
     # Per rij doorlopen
     for index, row in df.iterrows():
-        mem = process.memory_info().rss   # RAM in bytes
-        snapshots.append(mem)
 
         # row is een Series, je kan per kolom opvragen
         templatecode = row.iloc[0]
@@ -191,5 +176,5 @@ def excel_2_xml(file):
 
         itemcount += 1
 
-    filename_full_archive = f'{archive}incomming/{filename}'
-    shutil.move(filename_full, filename_full_archive)
+    file_path_archive = f'{archive}incomming/{filename}'
+    shutil.move(file_path, file_path_archive)

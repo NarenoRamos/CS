@@ -64,6 +64,13 @@ def main():
             print(f"Could not connect: {e}", flush=True)
             print("Reconecting over 30 seconden...", flush=True)
             time.sleep(30)
+            try:
+                imap.logout()
+            except:
+                pass
+
+            imap = imaplib.IMAP4_SSL(IMAP_SERVER)
+            imap.login(EMAIL_USER, PASSWORD)
 
 if __name__ == "__main__":
     main()

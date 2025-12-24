@@ -46,14 +46,14 @@ class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
             
-            # Voorbeeld pad: '/app/Scripts/Ncts Excel Upload/incomming/container.xls'
+            # Voorbeeld pad: '/Scripts/Ncts Excel Upload/incomming/container.xls'
             path_parts = event.src_path.strip('/').split('/')
 
             # routing_key = 'Ncts Excel Upload/incomming'
             routing_key = '/'.join(path_parts[1:-1])
 
             # file_path = ./incomming/contcontainer.xls
-            file_path = f"./{'/'.join(path_parts[3:])}"
+            file_path = f"./{'/'.join(path_parts[2:])}"
             
             publish_task(file_path, routing_key)
             print(f"Detected: {routing_key}", flush=True)

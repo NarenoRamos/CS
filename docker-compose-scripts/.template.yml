@@ -1,0 +1,27 @@
+services:
+  project_naam: 
+    image: excel-image  # Gebruik hier je standaard image naam
+    container_name: Project_Container_Naam #Wijzig naar unieke naam
+    networks:
+      - csnetwork
+    environment:
+      POSTGRES_HOST: db #Vereist indien er een database connectie nodig is
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      RABBITMQ_HOST: ${RABBITMQ_HOST} #Vereist voor de watchdog container taak te laten triggeren
+      EXCHANGE_NAME: ${EXCHANGE_NAME}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      ROUTING_KEY: "project/incomming"
+      QUEUE_NAME: "project_queue"
+      DB_PORT: ${DB_PORT}
+
+      PYTHONPATH: "/shared" #Vereist
+    volumes:
+      - "../scripts/Project:/app" 
+
+      - "../shared/classes.py:/shared/classes.py:ro"
+      - "../shared/templates:/shared/templates:ro"
+    command: ["/opt/venv/bin/python3", "main.py"] #Indien meerdere pythonfiles in repo -> naam van main.py wijzigen naar juiste file

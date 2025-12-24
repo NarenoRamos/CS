@@ -2,6 +2,7 @@ from tasks import read_mailincomming
 import os
 import pika # type: ignore
 import json
+import shutil
 
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')
 EXCHANGE_NAME = os.getenv('EXCHANGE_NAME')
@@ -17,17 +18,25 @@ def process_task(ch, method, properties, body):
     try:
         task_data = json.loads(body.decode())
         file_path = task_data['file_path'] # Dit is nu altijd /app/work_dir/bestand
+
+        if not os.path.exists(file_path):
+            print(f" [!] Bestand bestaat niet ({file_path}), taak wordt verwijderd.", flush=True)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
         
         print(f" [*] Worker {ROUTING_KEY} verwerkt bestand: {file_path}", flush=True)
-        # Voer de specifieke taaklogica voor 'taak1' of 'taak2' hier uit
         
-        read_mailincomming()
+        read_mailincomming(file_path)
         
         ch.basic_ack(delivery_tag=method.delivery_tag)
         print(f" [*] Taak {ROUTING_KEY} voltooid en bericht bevestigd.", flush=True)
+
     except Exception as e:
         print(f" [!!!] Fout bij verwerking van taak {ROUTING_KEY}: {e}", flush=True)
-        ch.basic_nack(delivery_tag=method.delivery_tag) # Stuur de taak terug
+        print(f" [!!!] Taak wordt verwijderd, file wordt verplaatst naar errordir", flush=True)
+
+        shutil.move(file_path, "./error")
+        ch.basic_nack(delivery_tag=method.delivery_tag)
 
 def start_consumer():
     credentials = pika.PlainCredentials(username=RABBITMQ_USER, password=RABBITMQ_PASS)

@@ -92,6 +92,44 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  pgadmin:
+    image: dpage/pgadmin4:9.11.0
+    container_name: pgadmincs
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'True'
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      - db
+    networks:
+      - csnetwork
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin  
+
+  jupyter:
+    # image: jupyter/scipy-notebook:latest
+    image: jupyter/scipy-notebook:latest
+    ports:
+      - 8888:8888
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    networks:
+      - csnetwork
+    environment:
+      JUPYTER_TOKEN: chocolate
+      JUPYTER_ENABLE_LAB: yes
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command: >
+      start.sh jupyter lab --NotebookApp.notebook_dir=/home/jovyan
+
+
 networks:
   csnetwork: 
     external: true
@@ -99,28 +137,5 @@ networks:
 volumes:
   rabbitmq_data:
   pgdata:
+  pgadmin-data:
 
-  # project_naam: 
-  #   image: excel-image  # Gebruik hier je standaard image naam
-  #   container_name: Project_Container_Naam
-  #   networks:
-  #     - csnetwork
-  #   environment:
-    # POSTGRES_HOST: db
-    # POSTGRES_DB: ${POSTGRES_DB}
-    # POSTGRES_USER: ${POSTGRES_USER}
-    # POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #     RABBITMQ_HOST: ${RABBITMQ_HOST}
-  #     EXCHANGE_NAME: ${EXCHANGE_NAME}
-  #     RABBITMQ_USER: ${RABBITMQ_USER}
-  #     RABBITMQ_PASS: ${RABBITMQ_PASS}
-  #     ROUTING_KEY: "project/incomming"
-  #     QUEUE_NAME: "project_queue"
-  #     PYTHONPATH: "/shared"
-  #   volumes:
-  #     - "../scripts/Project:/app"
-  #     - "../Project/main.py:/app/main.py"
-  #     - "../Project/tasks.py:/app/tasks.py"
-  #     - "../shared/classes.py:/shared/classes.py:ro"
-  #     - "../shared/templates:/shared/templates:ro"
-  #   command: ["/opt/venv/bin/python3", "main.py"]
